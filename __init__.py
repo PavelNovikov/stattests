@@ -115,10 +115,59 @@ def percentage_point(p):
     return ppnd16
 
 
-def ztest(x, sigma, mu0):
+def erf(x):
     """
+    Winitzki error function approximation
+
+    :param x: parameter value
+    :return: error function value
+
+     * [Actually it's copy-pasted from wikipedia and not yet checked]
+     Winitzki, Serge (2003). "Uniform approximations for transcendental functions".
+     Lecture Notes in Comput. Sci. Lecture Notes in Computer Science. 2667.
+     Spronger, Berlin. pp. 780–789. doi:10.1007/3-540-44839-X_82.
+     ISBN 978-3-540-40155-1. (Sect. 3.1 "Error Function of Real Argument erf x")
+    """
+    a = (8 * (math.pi - 3)) / (3 * math.pi * (4 - math.pi))
+
+    value = math.sqrt(
+        1 - math.exp(
+            - x ** 2 * (4 / math.pi + a * x ** 2) / (1 + a * x ** 2)
+        )
+    )
+    return value if x > 0 else -value
+
+
+def gaussian_cdf(x, _erf=erf):
+    """
+    The function approximately calculates
+    cumulative distribution function of a standard normal distribution
+
+    :param x: parameter value of the function
+    :param _erf: a function that approximately calculates error function
+    :return:
+    """
+    return (1 + _erf(x / math.sqrt(2))) / 2
+
+
+def ztest(x, sigma, mu0, tail="both"):
+    """
+    z-test for a single sample with known variance
+
+    :param x:
+    :param sigma:
+    :param mu0:
+    :param tail: "lower", "upper" or "both" (default)
+    :return:
     """
     z = (np.mean(x) - mu0) / (sigma * np.sqrt(len(x)))
+    if tail == "both":
+        return 1 - gaussian_cdf(abs(z))
+    elif tail == "lower":
+        return 1 - gaussian_cdf(-z)
+    elif tail == "upper":
+        return 1 - gaussian_cdf(z)
+
 
 def mann_whitney():
     pass
